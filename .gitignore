@@ -1,0 +1,8 @@
+build
+dist
+*.egg-info
+.venv
+*.iml
+.idea
+poetry.lock
+pyproject_bak.toml

@@ -30,7 +30,7 @@ class SolaceStreamReader(DataSourceStreamReader):
         self.auth_password = options.get("solace.message.auth.password")
         self.queue_name = options.get("solace.subscribe.queue")
         self.consumers_count = options.get("solace.spark.consumer.count", 1)
-        self.rows_per_batch = options.get("maxEventsPerTrigger", 1500)
+        self.rows_per_batch = options.get("maxEventsPerTask", 1500)
         self.last_offset = None
         # self.transport_security=options.get("solace.trustore.certs").value
         # self.transport_security = truststore_cert_bc.value
@@ -92,28 +92,26 @@ class SolaceStreamReader(DataSourceStreamReader):
 
         messaging_service.connect()
         persistent_receiver.start()
-        count_of_message = 1
+        count_of_message = 0
         reader_iter = []
         inbound_message_lst = []
         try:
             # logging.info(f"Subscribing to: {self.queue_name}")
 
             while count_of_message <= int(self.rows_per_batch):
-                # reader_iter_in=[]
+
                 received_message: InboundMessage = persistent_receiver.receive_message(1000)
-                # reader_iter_in.append(received_message.get_replication_group_message_id())
-                # reader_iter_in.append(received_message.get_payload_as_string())
+
                 reader_iter.append((str(received_message.get_replication_group_message_id()),
                                     received_message.get_payload_as_string()))
-                # persistent_receiver.ack(received_message)
+
                 inbound_message_lst.append(received_message)
                 count_of_message += 1
         except AttributeError as e:
-            print('\nTerminating receiver.. no messages left to consume')
+            logging.info("'\nTerminating receiver.. no messages left to consume'")
 
         except Exception as e:
             raise Exception(f"solace system exception caught: {e}")
-            return None
 
         finally:
             print('\nDisconnecting Messaging Service')
@@ -122,6 +120,7 @@ class SolaceStreamReader(DataSourceStreamReader):
 
             #persistent_receiver.terminate()
             messaging_service.disconnect()
+            logging.info("Returning the queue (partition) event records.")
             return iter(reader_iter)
 
         # return iter(reader_iter)

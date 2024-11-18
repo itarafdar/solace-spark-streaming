@@ -1,10 +1,9 @@
 [project]
 name = "solace-spark-streaming-connector"
-version = "0.1.0"
+version = "0.3.0"
 description = "spark structured streaming connector utility for solace pubsub queue."
 authors = [{name = "Indranil Tarafdar", email = "indranil.tarafdar@databricks.com"}]
 dependencies = [
-   "pyspark==4.0.0.dev1",
    "solace-pubsubplus==1.9.0",
    "requests==2.28.1"
 ]

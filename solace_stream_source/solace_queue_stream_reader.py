@@ -31,6 +31,7 @@ class SolaceStreamReader(DataSourceStreamReader):
         self.queue_name = options.get("solace.subscribe.queue")
         self.consumers_count = options.get("solace.spark.consumer.count", 1)
         self.rows_per_batch = options.get("maxEventsPerTask", 1500)
+        self.receiver_time_out=options.get("solace.receiver.time.out",10000)
         self.last_offset = None
         # self.transport_security=options.get("solace.trustore.certs").value
         # self.transport_security = truststore_cert_bc.value
@@ -100,7 +101,7 @@ class SolaceStreamReader(DataSourceStreamReader):
 
             while count_of_message <= int(self.rows_per_batch):
 
-                received_message: InboundMessage = persistent_receiver.receive_message(1000)
+                received_message: InboundMessage = persistent_receiver.receive_message(self.receiver_time_out)
 
                 reader_iter.append((str(received_message.get_replication_group_message_id()),
                                     received_message.get_payload_as_string()))
